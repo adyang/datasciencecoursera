@@ -1,17 +1,30 @@
+validateState <- function(state, data) {
+  if (!(state %in% data$State))
+    stop("invalid state")
+}
+
+validateOutcome <- function(outcome, mortalityCols) {
+  if (!(outcome %in% names(mortalityCols)))
+    stop("invalid outcome")
+}
+
+findBestRows <- function(data, state, mortCol) {
+  availData <- data[data[[mortCol]] != "Not Available",]
+  availData[,mortCol] <- as.numeric(availData[, mortCol])
+  dataInState <- availData[availData$State == state,]
+  bestRows <- dataInState[dataInState[,mortCol] == min(dataInState[,mortCol]),]
+  bestRows
+}
+
 best <- function (state, outcome) {
   data <- read.csv("outcome-of-care-measures.csv", colClasses = "character")
   mortalityCols <- list("heart attack"=11, "heart failure"=17, "pneumonia"=23)
+
+  validateState(state, data)
+  validateOutcome(outcome, mortalityCols)
   
-  if (!(state %in% data$State))
-    stop("invalid state")
-  if (!(outcome %in% names(mortalityCols)))
-    stop("invalid outcome")
+  bestRows <- findBestRows(data, state, mortalityCols[[outcome]])
   
-  mortCol <- mortalityCols[[outcome]]
-  data[,mortCol] <- as.numeric(data[, mortCol])
-  mortalityRates <- data[, mortCol]
-  dataInState <- data[data$State == state & !is.na(data[,mortCol]),]
-  bestRows <- dataInState[dataInState[,mortCol] == min(dataInState[,mortCol]),]
   best <- head(bestRows[order(bestRows$Hospital.Name),], 1)
   best$Hospital.Name
 }
