@@ -15,3 +15,20 @@ assertStop <- function (func, stopMessage) {
     }
   })
 }
+
+toMatrix <- function(dataFrame) {
+  newFrame <- as.matrix(dataFrame)
+  newFrame[is.na(newFrame)] <- "Not Available"
+  newFrame
+}
+
+assertValueEquals <- function(expected, actual) {
+  noNaExpected <- toMatrix(expected)
+  noNaActual <- toMatrix(actual)
+  tryCatch({
+    if (!all(noNaExpected == noNaActual))
+      stop(paste("Assertion Failed, expected:", "[", expected, "]", "but actual:", "[", actual, "]"))
+  },error=function (cond) {
+    stop(paste("Assertion Failed, expected:", "[", expected, "]", "but actual:", "[", actual, "]"))
+  })
+}
